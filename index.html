@@ -6,6 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script src="js/d3.js"></script>
+    <script src="js/map.js"></script>
 
     <link rel="stylesheet" href="css/bootstrap.css">
 
@@ -15,6 +17,7 @@
 </head>
 
 <body>
+	<div id="iot"></div>
 	<div class="container">
 		<h1>My Room</h1>
 		<ul class="nav nav-tabs">
@@ -23,12 +26,12 @@
 		</ul>
 
 		<div class="tab-content">
-			<div id="laptop"  class="tab-pane active">
+			<div id="laptop" data-x="100" data-y="100" class="tab-pane active">
 				<h2>All about my Laptop</h2>
 				<img src="img/laptop.jpg">
 				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 			</div>
-			<div id="lamp" class="tab-pane">
+			<div id="lamp" data-x="800" data-y="200" class="tab-pane">
 				<h3>Lamp controller</h3>
 				<img src="img/lamp.png">
 				<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
@@ -42,6 +45,25 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
+
+	var things= {}
+
+	$("ul.nav li a").each(function() {
+		var item=$(this.hash)[0]
+
+			things[item.id] = {
+				location : { x: $(item).data("x"),	y: $(item).data("y")},
+				label:item.id,
+				img: $(item).find("img")[0].src
+			}
+
+	}
+	)
+	
+	var me={};
+
+	
+	ithings = new IoTMap("#iot",things);
 
 	togglehash=function(){
 		var hashPieces = location.hash.split('?')
