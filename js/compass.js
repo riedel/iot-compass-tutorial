@@ -1,4 +1,7 @@
-function createSVGFoundation(divSelector){
+class IoTCompass
+{
+
+createSVGFoundation(divSelector){
   $(divSelector).html('');
   // $(divSelector).append("<ul id='thingslist' aria-hidden=false aria-label='Help Info'/>");
   // var ul = $(divSelector).find('ul');
@@ -11,8 +14,8 @@ function createSVGFoundation(divSelector){
 
   var width = svgWidth,
       height = svgHeight,
-      radius = Math.min(width, height);
-      radarradius = Math.round(radius/2.5);
+      radius = Math.min(width, height),
+      radarradius = Math.round(radius/2.5),
       thingradius = Math.round(radarradius/8);
 
     // .attr('aria-hidden',true)
@@ -24,9 +27,9 @@ function createSVGFoundation(divSelector){
   return {radius: radius, svg: svg, thingradius: thingradius, radarradius: radarradius};
 }
 
-function drawCircles(foundation) {
-  radius = foundation.radius;
-  svg = foundation.svg;
+draw() {
+  var radius = this.foundation.radius;
+  var svg = this.foundation.svg;
 
   var w = radius/7;
 
@@ -55,13 +58,13 @@ function drawCircles(foundation) {
       .attr("width", w)
       .attr("height", w);
 
-  generateCircle(svg, radarradius);
-  generateCircle(svg, radarradius*5/6);
-  generateCircle(svg, radarradius*2/3);
-  generateCircle(svg, radarradius/2);
+  this.generateCircle(svg, this.foundation.radarradius);
+  this.generateCircle(svg, this.foundation.radarradius*5/6);
+  this.generateCircle(svg, this.foundation.radarradius*2/3);
+  this.generateCircle(svg, this.foundation.radarradius/2);
 
   svg.append("circle")
-    .attr("r", radarradius/3)
+    .attr("r", this.foundation.radarradius/3)
     .attr('aria-hidden',true)
     .attr("id", "selectionCircle")
     .style("stroke", "#ff6f00")
@@ -70,19 +73,19 @@ function drawCircles(foundation) {
   svg.append('clipPath')
   .attr('id', 'clipCircle')
   .append('circle')
-    .attr('r', thingradius)
+    .attr('r', this.foundation.thingradius)
     .attr('cx','0')
     .attr('cy','0');
 
   svg.append('clipPath')
   .attr('id', 'clipCenterCircle')
   .append('circle')
-    .attr('r', thingradius*2)
+    .attr('r', this.foundation.thingradius*2)
     .attr('cx','0')
     .attr('cy','0');
 }
 
-function generateCircle(svgparent, radius) {
+generateCircle(svgparent, radius) {
   svgparent.append("circle")
     .attr("r", radius)
     .attr('aria-hidden',true)
@@ -108,8 +111,11 @@ function generateCircle(svgparent, radius) {
 
 // var things = JSON.parse(txt);
 
-function populateRadar(foundation, things){
+populate(things){
 
+  var svg = this.foundation.svg;
+  var radarradius=this.foundation.radarradius
+  var thingradius=this.foundation.thingradius
   $.each(things, function(key, val){
     // ul.append('<li>'+key+' blub blub</li>')
     var x = -radarradius*Math.sin((val.location.dir)*Math.PI/180);
@@ -183,7 +189,10 @@ function populateRadar(foundation, things){
   });
 }
 
-function updatePositions(things, direction) {
+update(things, me) {
+  var direction=me.dir;
+  var radarradius=this.foundation.radarradius
+
   $.each(things, function(key, val){
     var degree = val.location.dir;
     var actualDirection = degree-direction;
@@ -203,7 +212,7 @@ function updatePositions(things, direction) {
   });
 }
 
-function updateCenterImage(thing){
+select(thing){
   var centerimage = d3.select('#radarTargetImage')
   if(thing.value.img) {
     // button.select('image')
@@ -226,7 +235,7 @@ function updateCenterImage(thing){
   button.select("title").html(thing.key);
 }
 
-function resetCenterImage(){
+unselect(){
   var button = d3.select('#radarButton')
   button.attr("xlink:href", "#pagecontent")
 
@@ -234,13 +243,10 @@ function resetCenterImage(){
   button.select("title").html("Nothing")
 }
 
-function getCompassUtility(){
-    return {
-        createSVGFoundation: createSVGFoundation,
-        drawCircles: drawCircles,
-        populateRadar: populateRadar,
-        updatePositions: updatePositions,
-        updateCenterImage: updateCenterImage,
-        resetCenterImage: resetCenterImage
-    }
+constructor(div,things)
+	{
+	  this.foundation=this.createSVGFoundation(div)
+	  this.draw()
+	  this.populate(things)
+	}
 }

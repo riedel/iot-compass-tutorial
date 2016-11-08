@@ -6,7 +6,7 @@ var spatialAwareness = function(options) {
 
 	/* 
 	tiltLR - tilt left right (yaw)
-	tiltFB - tilt front back (pitch)
+	tiltFB - tilt ont back (pitch)
 	dir - view direction (angle (phi))
 	*/
 	var originalOrientation = {tiltLR: 0, tiltFB: 0, dir: 0};
@@ -16,8 +16,10 @@ var spatialAwareness = function(options) {
 	var thingsArray = [];
 	var FIELD_OF_VIEW = options.fov || 10;
 
-	function init() {
+	function init(things,me) {
+
 		var initialResetDone = false;
+		this.registerThings(things);
 
 		initDeviceOrientation(function(tiltLR,tiltFB,dir) {
 
@@ -29,11 +31,10 @@ var spatialAwareness = function(options) {
 			if(!initialResetDone) {
 				originalOrientation.tiltLR = currentOrientation.tiltLR;
 				originalOrientation.tiltFB = currentOrientation.tiltFB;
-				originalOrientation.dir = currentOrientation.dir;
+				originalOrientation.dir = currentOrientation.dir-me.dir;
 				initialResetDone = true;
 			}
-			var event = new CustomEvent('indiana_deviceorientation', 
-				{detail: {orientation: getOrientation(), things: thingsArray}});
+			var event = new CustomEvent('orientation2d', {detail: {dir: getOrientation().dir}});
 			document.dispatchEvent(event);
 
 			checkFront(FIELD_OF_VIEW);
@@ -103,7 +104,7 @@ var spatialAwareness = function(options) {
 				if(key != foundThing) {
 					console.log(foundThing, key);
 					foundThing = key;
-					var event = new CustomEvent('indiana_foundThingInFront', {detail: {key:key, value:thing}}	);
+					var event = new CustomEvent('thingInFront', {detail: {key:key, value:thing}}	);
 					document.dispatchEvent(event);
 				}
 			} else {
@@ -284,6 +285,22 @@ var spatialAwareness = function(options) {
 	  }
 	}
 
+	function cartesian2Polar(x,y){
+		var distance = Math.sqrt(x*x + y*y);
+		var theta= Math.atan2(-y, x);
+		return {distance:distance,theta:theta};
+	}
+
+	function cartesian2Degree(you,me){
+		var x=you.x-me.x;
+		var y=you.y-me.y;
+
+		var d=cartesian2Polar(x,y).theta*180/Math.PI;
+		d+=Math.PI;
+		d = (d>=360) ? 360 - d : d;
+		d = (d<0) ? 360 + d : d;
+		return d-me.dir;
+	}
 	/* 
 	Return Spatial Aware Indiana
 	*/
@@ -301,6 +318,7 @@ var spatialAwareness = function(options) {
 		getThingPosition2DinDegree: getThingPosition2DinDegree,
 		activateQRCodeReader : activateQRCodeReader,
 		deactivateQRCodeReader : deactivateQRCodeReader,
-		getLocationText: getLocationText
+		getLocationText: getLocationText,
+	        cartesian2Degree:cartesian2Degree
 	}
 }

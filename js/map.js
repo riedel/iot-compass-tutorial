@@ -1,15 +1,7 @@
+class IoTMap
+{
 
-
-function getMapUtility(){
-    return {
-        createSVGFoundation: createSVGFoundation,
-        draw: draw,
-        populate: populate,
-        updatePosition: updatePosition
-    }
-}
-
-function createSVGFoundation(divSelector){
+createSVGFoundation(divSelector){
 
     $(divSelector).html('');
     // $(divSelector).append("<ul id='thingslist' aria-hidden=false aria-label='Help Info'/>");
@@ -37,7 +29,7 @@ function createSVGFoundation(divSelector){
     return {radius: radius, svg: svg, thingradius: thingradius, radarradius: radarradius};
 }
 
-function draw(foundation) {
+draw(foundation) {
     radius = foundation.radius;
     svg = foundation.svg;
 
@@ -75,7 +67,7 @@ function draw(foundation) {
         .attr('cy','0');
 }
 
-function generateCircle(svgparent, radius) {
+generateCircle(svgparent, radius) {
     svgparent.append("circle")
         .attr("r", radius)
         .attr('aria-hidden',true)
@@ -84,7 +76,7 @@ function generateCircle(svgparent, radius) {
         .attr("class", "svgshadow");
 }
 
-function generateBlock(svgparent, height, width ){
+generateBlock(svgparent, height, width ){
     svgparent.append("rect")
         .attr("x", -width/2)
         .attr("y", -height/2)
@@ -96,7 +88,7 @@ function generateBlock(svgparent, height, width ){
         .attr("class", "svgshadow");
 }
 
-function populate(foundation, things){
+populate(foundation, things){
 
     $.each(things, function(key, val){
         var color = "black";
@@ -132,12 +124,12 @@ function populate(foundation, things){
 }
 
 
-function move(dX,dY){
+move(dX,dY){
     position.x+=dX;
     position.y-=dY;
 }
 
-function updatePosition(things, direction) {
+update(things, me) {
     // move(0,5);
     var clippedCoords;
     $.each(things, function(key, val){
@@ -152,10 +144,18 @@ function updatePosition(things, direction) {
         .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")"+" rotate("+(-direction)+") ");
 }
 
-function clipCoordsToBorder(x,y) {
+clipCoordsToBorder(x,y) {
     var xTemp = Math.min(x, radarradius);
     var yTemp = Math.min(y, radarradius);
     var clippedX = Math.max(-radarradius, xTemp);
     var clippedY = Math.max(-radarradius, yTemp);
     return {x:clippedX , y:clippedY}
+}
+
+constructor(div,things)
+	{
+	  this.foundation=this.createSVGFoundation(div)
+	  this.draw()
+	  this.populate(things)
+	}
 }
