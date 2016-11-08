@@ -11,27 +11,27 @@ createSVGFoundation(divSelector){
     var foundation = d3.select(divSelector);
 
     var svgWidth = $(window).width();
-    var svgHeight = $(window).height();
+    
+    var ratio=(svgWidth/Math.max(this.room.width,this.room.height))*0.8
+   
 
     var width = svgWidth,
-        height = svgHeight,
-        radius = Math.min(width, height);
-    radarradius = Math.round(radius/2.5);
-    thingradius = Math.round(radarradius/8);
-    position ={x:0,y:0};
+        height = this.room.height*ratio*1.2,
+	thingradius = Math.round(width/16),
+	position ={x:0,y:0};
 
 
     var svg = foundation.append("svg")
-        .attr("width", radius)
-        .attr("height", radius)
+        .attr("width", width)
+        .attr("height", height)
         .append("g")
-        .attr("transform", "translate(" + radius / 2 + "," + radius / 2 + ")");
-    return {radius: radius, svg: svg, thingradius: thingradius, radarradius: radarradius};
+        .attr("transform", "translate(" + width/10 + "," +  height/10  + ")");
+    return { svg: svg, thingradius: thingradius, width: width, height: height};
 }
 
-draw(foundation) {
-    radius = foundation.radius;
-    svg = foundation.svg;
+draw() {
+    var thingradius = this.foundation.thingradius;
+    var svg = this.foundation.svg;
 
     var center = svg.append("g")
         .append("svg:a")
@@ -39,9 +39,8 @@ draw(foundation) {
         .attr("id", "mapButton")
         .attr("xlink:href", "#pagecontentMap")
 
-    center.append("title").html("Nothing")
-    center.append("desc").html("is in front of you.")
-    w = radius/30;
+    var w = this.foundation.width/30;
+
     var centerimage = center.append("svg:image")
         .attr('aria-hidden',true)
         .attr("id", "mapTargetImage")
@@ -50,21 +49,7 @@ draw(foundation) {
         .attr("width", w)
         .attr("height", w);
 
-    generateBlock(svg,radarradius*2,radarradius*2);
-
-    svg.append('clipPath')
-        .attr('id', 'clipCircleMap')
-        .append('circle')
-        .attr('r', thingradius)
-        .attr('cx','0')
-        .attr('cy','0');
-
-    svg.append('clipPath')
-        .attr('id', 'clipCenterCircleMap')
-        .append('circle')
-        .attr('r', thingradius*2)
-        .attr('cx','0')
-        .attr('cy','0');
+    this.generateBlock(svg,this.room.width*this.ratio,this.room.height*this.ratio);
 }
 
 generateCircle(svgparent, radius) {
@@ -78,8 +63,8 @@ generateCircle(svgparent, radius) {
 
 generateBlock(svgparent, height, width ){
     svgparent.append("rect")
-        .attr("x", -width/2)
-        .attr("y", -height/2)
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("height", width)
         .attr("width", height)
         .attr('aria-hidden',true)
@@ -88,7 +73,10 @@ generateBlock(svgparent, height, width ){
         .attr("class", "svgshadow");
 }
 
-populate(foundation, things){
+populate(things){
+    var svg=this.foundation.svg
+    var thingradius=this.foundation.thingradius
+    var scope=this;
 
     $.each(things, function(key, val){
         var color = "black";
@@ -119,42 +107,44 @@ populate(foundation, things){
             .attr("r", thingradius)
             .style("stroke-width", 2)
             .style("stroke", color)
+
+
+        var clippedCoords=scope.clipCoordsToBorder(val.location.x,val.location.y);
+
+        thing.attr("transform", "translate("+ clippedCoords.x+", "+clippedCoords.y+")")
         thing.append("title").html(key)
+
     });
 }
 
-
-move(dX,dY){
-    position.x+=dX;
-    position.y-=dY;
-}
 
 update(things, me) {
-    // move(0,5);
     var clippedCoords;
+
     $.each(things, function(key, val){
-        clippedCoords=clipCoordsToBorder(val.location.x,val.location.y);
+        clippedCoords=this.clipCoordsToBorder(val.location.x,val.location.y);
         d3.select("#"+key+"map")
-            .attr("transform", "rotate(270) translate("+clippedCoords.x+", "+clippedCoords.y+") rotate(90)")
+            .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")")
     });
 
-    clippedCoords=clipCoordsToBorder(position.x,position.y);
+    clippedCoords=clipCoordsToBorder(me.x,me.y);
     d3.select('#mapTargetImage')
         .attr('xlink:href', 'img/' + "arrow2" + '.png')
         .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")"+" rotate("+(-direction)+") ");
 }
 
 clipCoordsToBorder(x,y) {
-    var xTemp = Math.min(x, radarradius);
-    var yTemp = Math.min(y, radarradius);
-    var clippedX = Math.max(-radarradius, xTemp);
-    var clippedY = Math.max(-radarradius, yTemp);
-    return {x:clippedX , y:clippedY}
+    var x= x* this.ratio;
+    var y = y* this.ratio;
+
+    return {x:x , y:y}
 }
 
-constructor(div,things)
+constructor(div,things,room={width:1000,height:600})
 	{
+	  this.room=room
 	  this.foundation=this.createSVGFoundation(div)
+	  this.ratio=(this.foundation.width/Math.max(this.room.width,this.room.height))*0.8
 	  this.draw()
 	  this.populate(things)
 	}
