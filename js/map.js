@@ -120,17 +120,18 @@ populate(things){
 
 update(things, me) {
     var clippedCoords;
+    var scope=this;
 
     $.each(things, function(key, val){
-        clippedCoords=this.clipCoordsToBorder(val.location.x,val.location.y);
+        clippedCoords=scope.clipCoordsToBorder(val.location.x,val.location.y);
         d3.select("#"+key+"map")
             .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")")
     });
 
-    clippedCoords=clipCoordsToBorder(me.x,me.y);
+    clippedCoords=this.clipCoordsToBorder(me.x,me.y);
     d3.select('#mapTargetImage')
         .attr('xlink:href', 'img/' + "arrow2" + '.png')
-        .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")"+" rotate("+(-direction)+") ");
+        .attr("transform", "translate("+clippedCoords.x+", "+clippedCoords.y+")"+" rotate("+(me.dir)+") ");
 }
 
 clipCoordsToBorder(x,y) {
