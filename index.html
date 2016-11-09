@@ -91,6 +91,13 @@ $(document).ready(function() {
 	togglehash()
 
 	window.addEventListener("hashchange", togglehash, false);
+
+	spatial.init(things,me);
+
+	// Update thing positions
+	document.addEventListener('orientation2d', function(evt) {
+		ithings.update(things, {dir:evt.detail.dir});
+	});
 })
 
 </script>
