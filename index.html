@@ -67,7 +67,16 @@ $(document).ready(function() {
 
 	togglehash=function(){
 		var hashPieces = location.hash.split('?')
-			$('.nav-tabs a[href="'+hashPieces[0]+'"]').tab('show');
+		atab=$('.nav-tabs a[href="'+hashPieces[0]+'"]')
+		if(atab.length)
+		{
+			atab.tab('show')
+		}
+		else
+		{
+			[,me.x,me.y,me.dir]=hashPieces
+			ithings.update(things,me)
+		}
 	}
 
 	togglehash()
