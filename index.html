@@ -8,6 +8,8 @@
 
     <script src="js/d3.js"></script>
     <script src="js/map.js"></script>
+    <script src="js/compass.js"></script>
+    <script src="js/indiana.js"></script>
 
     <link rel="stylesheet" href="css/bootstrap.css">
 
@@ -63,7 +65,9 @@ $(document).ready(function() {
 	var me={};
 
 	
-	ithings = new IoTMap("#iot",things);
+	ithings = new IoTCompass("#iot",things);
+
+	spatial= spatialAwareness({ "fov": 40 });
 
 	togglehash=function(){
 		var hashPieces = location.hash.split('?')
@@ -75,6 +79,11 @@ $(document).ready(function() {
 		else
 		{
 			[,me.x,me.y,me.dir]=hashPieces
+			$.map(things,function(thing)
+					{
+					  thing.location.dir=spatial.cartesian2Degree(thing.location,me)
+					}
+					)
 			ithings.update(things,me)
 		}
 	}
